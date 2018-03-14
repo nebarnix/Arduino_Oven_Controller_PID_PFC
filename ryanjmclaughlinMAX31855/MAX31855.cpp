@@ -6,7 +6,7 @@
 */
 
 #include <avr/pgmspace.h>
-#include <WProgram.h>
+#include <Arduino.h>
 #include <stdlib.h>
 
 #include "MAX31855.h"
