@@ -16,7 +16,9 @@
 //double aggKp=1, aggKi=.05, aggKd=0;
 //double aggKp=65, aggKi=0, aggKd=0;
 //double aggKp=65.0, aggKi=0.1, aggKd=65.0/5.0;
-double aggKp=55.85, aggKi=0.240, aggKd=2152;
+//double aggKp=55.85, aggKi=0.240, aggKd=2152;
+//double aggKp=5.585, aggKi=0.0240, aggKd=280; //D term way too noisey without filtering
+double aggKp=7.585, aggKi=0.0120, aggKd=0;
 
 
 #endif

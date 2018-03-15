@@ -9,7 +9,7 @@ double heating_rate = 0; // degree per minute
 unsigned long initialTime = 0;
 
 //Define Variables we'll be connecting to
-double Setpoint, Output;
+double Setpoint, Output, OutputP;
 double tempTC, tempCJC;
 bool faultOpen, faultShortGND, faultShortVCC, x;
 
@@ -20,7 +20,7 @@ bool faultOpen, faultShortGND, faultShortVCC, x;
 // Each degree centigrade as one point towards the decision
 // to turn on or off.  Kp scales this up toward 5000.
 //double consKp=1, consKi=0.05, consKd=0;
-PID myPID(&tempTC, &Output, &Setpoint, aggKp, aggKi, aggKd, DIRECT);
+PID myPID(&tempTC, &OutputP, &Setpoint, aggKp, aggKi, aggKd, DIRECT);
 
 // Time window of 5000 milliseconds?
 int WindowSize = 1000;
@@ -37,9 +37,10 @@ void TC_Relay_Init()
   
   //initialize the variables we're linked to
   Setpoint = initialSetpoint;
+  //x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);
 
-  //tell the PID to range between 0 and the full window size
-  myPID.SetOutputLimits(0, WindowSize);
+  //tell the PID to range between 0 and 100 percent
+  myPID.SetOutputLimits(0.0, 100.0);
 
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
@@ -84,19 +85,22 @@ void TC_Relay_Loop()
     {
         Setpoint = finalSetpoint;
     }
-     
-    x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);
-    double gap = abs(Setpoint-tempTC); //distance away from setpoint
-     
-    myPID.Compute();
   
     /************************************************
      * turn the output pin on/off based on pid output
      ************************************************/
-    if(time_elapsed - windowStartTime>WindowSize)
+    if(time_elapsed - windowStartTime > WindowSize)
     { //time to shift the Relay Window
         windowStartTime += WindowSize;
-        //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
+        //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);        
+        double tempTCOld = tempTC;
+        x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);
+        
+        if(faultOpen | faultShortGND | faultShortVCC)
+           tempTC = tempTCOld; //discard result if we have a blip, else the offscale value will mess up our PID
+        
+        myPID.Compute(); //don't let the output change mid-pulse!
+        Output = (OutputP/100.0)*WindowSize; //convert percentage to window size upon compute
         reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
     }
     
@@ -109,7 +113,6 @@ void TC_Relay_Loop()
         //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
         //delay(minimumRelayTime);
         //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
-    } else digitalWrite(RELAY,LOW);
+    } 
+    else digitalWrite(RELAY,LOW);
 }
-
-
