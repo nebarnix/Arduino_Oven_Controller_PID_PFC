@@ -144,7 +144,11 @@ void process_string(char instruction[], int size)
 	int len;	/* length of parameter argument */
 
 	gc->seen = 0;
-        gc->M = 0;
+        //gc->M = 0;
+        //If M0 then ramp
+        //If M1 then move setpoint without ramp
+        //If M2 then set flag to kill power after reaching target temperature
+        
         
 	len=0;
 	/* scan the string for commands and parameters, recording the arguments for each,
@@ -164,16 +168,10 @@ void process_string(char instruction[], int size)
 		}
 	}
 
-    Serial.print("M = ");
-    Serial.print(gc->M);
-    Serial.print(", S = ");
-    Serial.print(gc->S);
-    Serial.print(", R = ");
-    Serial.print(gc->R);
-    Serial.println(", ");
-
+    
     double newSetpoint = GetSetpoint();
     double newRate = GetRate();
+    
     if(gc->S >= TMIN)
     {
         if(gc->S <= TMAX)
@@ -190,8 +188,31 @@ void process_string(char instruction[], int size)
             SetRate(newRate);
         }
     }
-    
 
+    if(gc->M == 2) //heat until
+       {
+       killFlag = true;
+       }
+    else if(gc->M == 1) //Jump to
+       {
+       //newRate = double(gc->R);
+       gc->R = 1000000000;
+       SetRate(1000000000); //there has to be a better way :P
+       killFlag = false;
+       }
+    else if(gc->M == 0) //Ramp to
+       killFlag = false;
+
+    Serial.print("M = ");
+    Serial.print(gc->M);
+    Serial.print(", S = ");
+    Serial.print(gc->S);
+    Serial.print(", R = ");
+    Serial.print(gc->R);
+    Serial.print(", Kill at temp = ");
+    Serial.println(killFlag);
+    
+   
     return;
 }
 
@@ -200,6 +221,8 @@ void reportResult(double Setpoint, double tempTC, double tempCJC,
                   double Output, int WindowSize)
 {
       // Report during each new window
+      Serial.print(millis()/1000.0);
+      Serial.print("\t");
       Serial.print(Setpoint);
       Serial.print("\t");
       Serial.print(tempTC);

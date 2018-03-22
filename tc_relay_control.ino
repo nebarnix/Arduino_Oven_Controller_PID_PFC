@@ -3,6 +3,8 @@
 #include <PID_v1.h>
 #include "parameters.h"
 
+
+
 double initialSetpoint = 0.0; // initial
 double finalSetpoint = 0.0; // goal
 double heating_rate = 0; // degree per minute
@@ -23,7 +25,7 @@ bool faultOpen, faultShortGND, faultShortVCC, x;
 PID myPID(&tempTC, &OutputP, &Setpoint, aggKp, aggKi, aggKd, DIRECT);
 
 // Time window of 5000 milliseconds?
-int WindowSize = 1000;
+int killFlagCounter=0,WindowSize = 1000;
 unsigned long windowStartTime; // each new increment
 
 //MAX31855 temp(3, 4, 5); // measure and fault pins
@@ -41,7 +43,7 @@ void TC_Relay_Init()
 
   //tell the PID to range between 0 and 100 percent
   myPID.SetOutputLimits(0.0, 100.0);
-
+  myPID.SetSampleTime(1000); //1 second updates
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
   
@@ -81,6 +83,7 @@ void TC_Relay_Loop()
     unsigned long time_elapsed = millis() - initialTime;
   
     Setpoint = initialSetpoint + double(time_elapsed) * heating_rate / oneminute;
+    
     if (Setpoint > finalSetpoint) 
     {
         Setpoint = finalSetpoint;
@@ -102,6 +105,23 @@ void TC_Relay_Loop()
         myPID.Compute(); //don't let the output change mid-pulse!
         Output = (OutputP/100.0)*WindowSize; //convert percentage to window size upon compute
         reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
+        if(killFlag == true)
+           {
+           if(tempTC >= finalSetpoint)
+              killFlagCounter++;
+           else
+              killFlagCounter = 0;
+           
+           if(killFlagCounter > 10) //10 consecutive seconds of temperature required to kill power
+              {
+              finalSetpoint = 0;
+              killFlagCounter = 0;
+              Serial.println("Reached Temp, killing heater");
+              }
+           }
+         else
+            killFlagCounter = 0;
+           
     }
     
     if(Output > time_elapsed - windowStartTime)

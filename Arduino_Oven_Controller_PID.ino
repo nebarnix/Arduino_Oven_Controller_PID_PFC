@@ -20,6 +20,9 @@
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("M0 Sx.x Rx.x to ramp-to-hold");
+  Serial.println("M1 Sx.x to jump");
+  Serial.println("M2 Sx.x Rx.x to ramp-to-kill");
   TC_Relay_Init();
 }
 
