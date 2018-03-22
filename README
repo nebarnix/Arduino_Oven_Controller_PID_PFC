@@ -4,6 +4,10 @@
 *                                                               *
 ****************************************************************/
 
+Modified by Nebarnix to work with a kiln made of a 110V hotplate guts in a firebrick cave. 
+Max temp is 800C give or take. 
+Powering off of 220V might get more temperature at heating element expense. 
+
 -> PID_v1 Library
 Written by Brett Beauregard, licensed under CC BY-SA 3.0
 This library is placed in the Arduino sketchbook folder
