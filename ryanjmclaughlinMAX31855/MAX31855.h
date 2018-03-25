@@ -1,3 +1,6 @@
+#ifndef MAX31855_H
+#define MAX31855_H
+
 /*
   MAX31855.h - Library for reading temperature from a MAX31855.
   
@@ -5,7 +8,7 @@
   http://creativecommons.org/licenses/by-sa/3.0/
 */
 
-#include <WProgram.h>
+#include <Arduino.h>
 
 class MAX31855 {
  public:
@@ -20,3 +23,5 @@ class MAX31855 {
   uint32_t spiread32(void);
   uint16_t spiread16(void);
 };
+
+#endif
