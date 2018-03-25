@@ -8,6 +8,14 @@ Modified by Nebarnix to work with a kiln made of a 110V hotplate guts in a fireb
 Max temp is 800C give or take. 
 Powering off of 220V might get more temperature at heating element expense. 
 
+Commands supported:
+  
+  Serial.println("M0 Sx.x Rx.x to ramp-to-hold"); //For general ramp to a temp, can go either up or down
+  Serial.println("M1 Sx.x to jump");              //Useful for either setting the initial setpoint to measured temp, or powering off eg. M1 S1
+  Serial.println("M2 Sx.x Rx.x to ramp-to-kill"); //Ramp to a temp then kill heater. Useful for overnight firing so you don't have to get up
+  Serial.println("M3 Pause PID and Hold power"); //Pause PID when you are messing with things like opening the kiln door
+  Serial.println("M4 Resume PID");                //Don't forget to resume the PID when you've closed the door / added the metal / etc.
+
 -> PID_v1 Library
 Written by Brett Beauregard, licensed under CC BY-SA 3.0
 This library is placed in the Arduino sketchbook folder
