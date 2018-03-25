@@ -4,7 +4,10 @@
 *                                                               *
 ****************************************************************/
 
-WARNING: this is a bad way to control small diameter nichrome elements. Their thermal time constant is much shorter than 500mS. To do this, use a zero crossing detector and time delay methods with a TRIAC.
+WARNING: this is a bad way to control small diameter nichrome elements. 
+Their thermal time constant is much shorter than 500mS. 
+To do this, use a zero crossing detector and time delay methods with a TRIAC.
+This software does NOT support said method yet. 
 
 Modified by Nebarnix to work with a kiln made of a 110V hotplate guts in a firebrick cave. 
 Max temp is 800C give or take. 
