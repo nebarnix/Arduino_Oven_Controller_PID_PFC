@@ -19,10 +19,12 @@
 #include "parameters.h"
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(38400);
   Serial.println("M0 Sx.x Rx.x to ramp-to-hold");
   Serial.println("M1 Sx.x to jump");
   Serial.println("M2 Sx.x Rx.x to ramp-to-kill");
+  Serial.println("M3 Pause PID and Hold power");
+  Serial.println("M4 Resume PID");
   TC_Relay_Init();
 }
 
