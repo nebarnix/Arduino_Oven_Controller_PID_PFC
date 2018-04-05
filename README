@@ -12,7 +12,7 @@ involved.
 
 To use this, one MUST have a zero crossing detector into pin 10. The zero 
 crossing detector is a back-to-back pair of opto isolators (or the use of a 
-dual opto in a single package) that procudes a pulse centered around the zero 
+dual opto in a single package) that produces a pulse centered around the zero 
 crossing. 
 
 The pulse is read using interrupts, and a deicision is made on a per-cycle basis 
@@ -29,9 +29,7 @@ Bumpless transfer between power levels is achieved by setting TotalPulses to 1
 and OnPulses to 0, thus restarting the comparison from an initial ON cycle 
 (0/1 = 0, so it will always turn on unless the power desired is 0)
 
-Modified by Nebarnix to work with a kiln made of a 110V hotplate guts in a firebrick cave. 
-Max temp is 800C give or take. 
-Powering off of 220V might get more temperature at heating element expense. 
+Modified by Nebarnix to implement PFC in order to use with a 2500 Watt length of cheap uxcell nichrome coiled elements.
 
 Commands supported:
   
