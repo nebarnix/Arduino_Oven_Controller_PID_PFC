@@ -9,7 +9,7 @@ void TC_Relay_Init()
 {
 
   windowStartTime = millis();
-  pinMode(RELAY, OUTPUT);
+  pinMode(TRIACPIN, OUTPUT);
 
   //initialize the variables we're linked to
   Setpoint = initialSetpoint;
@@ -17,7 +17,7 @@ void TC_Relay_Init()
 
   //tell the PID to range between 0 and 100 percent
   myPID.SetOutputLimits(0.0, 100.0);
-  myPID.SetSampleTime(WindowSize); //1 second updates
+  myPID.SetSampleTime(SampleInterval); //1 second updates
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
 
@@ -68,11 +68,13 @@ void SetRate(double fRate)
 void TC_Relay_Loop()
 {
   unsigned long time_elapsed = millis() - initialTime;
-
+  
+  
     
   //Sample time up, update all variables
-  if (time_elapsed - windowStartTime > WindowSize)
-  {   
+  if (time_elapsed - windowStartTime > SampleInterval)
+  {
+    //tic = micros();   
     //Calc ramp
     Setpoint = initialSetpoint + double(time_elapsed) * heating_rate / oneminute;
     //we've reached our goal, so stop ramping
@@ -82,13 +84,14 @@ void TC_Relay_Loop()
       heating_rate=0;
       }
     
-    windowStartTime += WindowSize;
-    //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
+    windowStartTime += SampleInterval;
+    //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,SampleInterval);
     double tempTCOld = tempTC, Temp1, Temp2, Temp3;
 
 
     do {
-      x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);
+      
+      x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);      
       while (tempTC == 9999) x = temp.readMAX31855(&tempTC, &tempCJC, &faultOpen, &faultShortGND, &faultShortVCC);
       Temp1 = tempTC;
 
@@ -99,7 +102,7 @@ void TC_Relay_Loop()
       Temp3 = tempTC;
 
     } while (abs(Temp1 - Temp2) > 1.0 || abs(Temp2 - Temp3) > 1.0); //repeat until the differences between the readings are below 1 degree
-
+    
     tempTC = (Temp1 + Temp2 + Temp3) / 3.0; //average three readings together
     /*Serial.print(Temp1);
       Serial.print(' ');
@@ -108,11 +111,13 @@ void TC_Relay_Loop()
       Serial.println(Temp3);*/
     //if(faultOpen | faultShortGND | faultShortVCC)
     //  tempTC = tempTCOld; //discard result if we have a blip, else the offscale value will mess up our PID (above filter should work)
-
-    myPID.Compute();
-    Output = (OutputP / 100.0) * WindowSize; //convert percentage to window size upon compute
-
-    reportResult(Setpoint, tempTC, tempCJC, faultOpen, faultShortGND, faultShortVCC, Output, WindowSize);
+    OutputPPrev = OutputP;
+    myPID.Compute(); //this will update OutputP (0-100 output percent)
+    if(round(OutputP) != round(OutputPPrev)) // Only restart algorithm on a power change
+      cycleCount = 0; //this will force a restart of the algorithm on a power level change. This is handled in the interrupt!
+    
+    reportResult(Setpoint, tempTC, tempCJC, faultOpen, faultShortGND, faultShortVCC, OutputP, SampleInterval);
+    
     if (killFlag == true)
     {
       if (tempTC >= finalSetpoint)
@@ -132,18 +137,5 @@ void TC_Relay_Loop()
     }
     else
       killFlagCounter = 0;
-
   }
-
-  if (Output > (time_elapsed - windowStartTime))
-  { // if we're in the "on" part of the duty cycle
-    if (Output > minimumRelayTime)
-    { // check to see if it's worth turning on.
-      digitalWrite(RELAY, HIGH);
-    }
-    //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
-    //delay(minimumRelayTime);
-    //reportResult(Setpoint,tempTC,tempCJC,faultOpen,faultShortGND,faultShortVCC,Output,WindowSize);
-  }
-  else digitalWrite(RELAY, LOW);
 }

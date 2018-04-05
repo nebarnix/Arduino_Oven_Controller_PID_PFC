@@ -336,7 +336,7 @@ void process_string(char instruction[], int size)
 
 void reportResult(double Setpoint, double tempTC, double tempCJC,
                   bool faultOpen, bool faultShortGND, bool faultShortVCC,
-                  double Output, int WindowSize)
+                  double OutputP, int SampleInterval)
 {
   // Report during each new window
   Serial.print(millis() / 1000.0);
@@ -350,15 +350,15 @@ void reportResult(double Setpoint, double tempTC, double tempCJC,
   Serial.print(faultOpen);
   Serial.print(faultShortGND);
   Serial.print(faultShortVCC);
-  Serial.print("\t");
+  Serial.print("\t"); //temp
   if (hold == false)
-    Serial.println(100.0 * (((round(Output) * 1.0) / WindowSize)));
+    Serial.println(OutputP);
   else
   {
-    Serial.print(100.0 * (((round(Output) * 1.0) / WindowSize)));
+    Serial.print(OutputP);
     Serial.print("\t");
     Serial.println("HOLD");
   }
   //Serial.print("\t");
-  //Serial.println(WindowSize);
+  //Serial.println(SampleInterval);
 }
