@@ -4,10 +4,15 @@
 *                                                               *
 ****************************************************************/
 
-WARNING: this is a bad way to control small diameter nichrome elements. 
-Their thermal time constant is much shorter than 500mS. 
-To do this, use a zero crossing detector and time delay methods with a TRIAC.
-This software does NOT support said method yet. 
+PFC is a better way to control small diameter nicrhome elements. It is still not perfect but it does allow you to use cheap SSRs like the SSR-40DA which only switch upon zero crossings. Ideally, we would want phase angle control but this requires the use of a TRIAC instead of an SSR, with all of the extra complexity involved. 
+To use this, one MUST have a zero crossing detector into pin 10. The zero crossing detector is a back-to-back pair of opto isolators (or the use of a dual opto in a single package) that procudes a pulse centered around the zero crossing. 
+The pulse is read using interrupts, and a deicision is made on a per-cycle basis wether or not to turn on the SSR for that cycle. It does this by counting on vs total pulses, and doing a check of this division result x100 vs target power percent, which is set by the PID as a number between 0 and 100. 
+100 x (onCycles/TotalCycles) = Average Percent Power. 
+
+If this is greater than the desired power, do not turn on this cycle
+If this is less than the desired power, DO turn on this cycle. 
+
+Bumpless transfer between power levels is achieved by setting TotalPulses to 1 and OnPulses to 0, thus restarting the comparison from an initial ON cycle (0/1 = 0, so it will always turn on unless the power desired is 0)
 
 Modified by Nebarnix to work with a kiln made of a 110V hotplate guts in a firebrick cave. 
 Max temp is 800C give or take. 
